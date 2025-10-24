@@ -1,0 +1,162 @@
+{
+  "general": {
+    "easy": [
+      {
+        "id": 1,
+        "question": "What color is the sky on a clear day?",
+        "options": ["Blue", "Green", "Red", "Yellow"],
+        "answer": 0
+      },
+      {
+        "id": 2,
+        "question": "How many legs does a cat have?",
+        "options": ["2", "3", "4", "5"],
+        "answer": 2
+      }
+    ],
+    "medium": [
+      {
+        "id": 3,
+        "question": "Which planet is known as the Red Planet?",
+        "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+        "answer": 1
+      },
+      {
+        "id": 4,
+        "question": "What is the capital of France?",
+        "options": ["Paris", "Berlin", "London", "Madrid"],
+        "answer": 0
+      }
+    ],
+    "hard": [
+      {
+        "id": 5,
+        "question": "Who developed general relativity?",
+        "options": ["Newton", "Einstein", "Galileo", "Hawking"],
+        "answer": 1
+      },
+      {
+        "id": 6,
+        "question": "Which gas is most abundant in Earth's atmosphere?",
+        "options": ["Oxygen", "CO₂", "Nitrogen", "Hydrogen"],
+        "answer": 2
+      }
+    ]
+  },
+  "web": {
+    "easy": [
+      {
+        "id": 7,
+        "question": "What does HTML stand for?",
+        "options": [
+          "HyperText Markup Language",
+          "Home Tool Markup Language",
+          "Hyperlinks & Text Markup Language"
+        ],
+        "answer": 0
+      },
+      {
+        "id": 8,
+        "question": "What does CSS stand for?",
+        "options": [
+          "Colorful Style Sheets",
+          "Cascading Style Sheets",
+          "Computer Style Sheets"
+        ],
+        "answer": 1
+      }
+    ],
+    "medium": [
+      {
+        "id": 9,
+        "question": "Which HTML element holds JS?",
+        "options": ["<js>", "<javascript>", "<script>", "<code>"],
+        "answer": 2
+      },
+      {
+        "id": 10,
+        "question": "Which CSS property changes text color?",
+        "options": ["background-color", "font-color", "text-color", "color"],
+        "answer": 3
+      }
+    ],
+    "hard": [
+      {
+        "id": 11,
+        "question": "HTTP 401 means:",
+        "options": ["OK", "Moved Permanently", "Unauthorized", "Server Error"],
+        "answer": 2
+      },
+      {
+        "id": 12,
+        "question": "Attach an event in JS with:",
+        "options": [
+          "addEventListener()",
+          "attachEvent()",
+          "setEvent()",
+          "onEvent()"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  "programming": {
+    "easy": [
+      {
+        "id": 13,
+        "question": "Single-line comment in JS:",
+        "options": ["//", "#", "/* */", "<!-- -->"],
+        "answer": 0
+      },
+      {
+        "id": 14,
+        "question": "Language with snake logo:",
+        "options": ["Java", "Python", "C++", "Ruby"],
+        "answer": 1
+      }
+    ],
+    "medium": [
+      {
+        "id": 15,
+        "question": "Create constant in JS:",
+        "options": ["var", "let", "const", "define"],
+        "answer": 2
+      },
+      {
+        "id": 16,
+        "question": "Python `len()` does:",
+        "options": [
+          "returns the length",
+          "converts to int",
+          "loops a list",
+          "nothing"
+        ],
+        "answer": 0
+      }
+    ],
+    "hard": [
+      {
+        "id": 17,
+        "question": "Big O notation describes:",
+        "options": [
+          "Code size",
+          "Algorithm efficiency",
+          "Object props",
+          "Test correctness"
+        ],
+        "answer": 1
+      },
+      {
+        "id": 18,
+        "question": "SQL stands for:",
+        "options": [
+          "Structured Query Language",
+          "Sequential Query List",
+          "Systematic Question Logic",
+          "Structured Question Language"
+        ],
+        "answer": 0
+      }
+    ]
+  }
+}
