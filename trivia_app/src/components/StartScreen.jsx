@@ -2,14 +2,34 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function StartScreen() {
-    const [topic, setTopic] = useState([]);
+    const [topics, setTopics] = useState([]);
     const [difficulty, setDifficulty] = useState([]);
-    const topics = ["general", "web", "programming"];
     const difficulties = ["easy", "medium", "hard"];
     const navigate = useNavigate();
 
+    useEffect(() => {loadCategories();},[]);
+
     function handleStart() {
         navigate("/quiz", {state: {topic,difficulty}});
+    }
+
+    async function loadCategories() {
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || "";
+
+            const res = await fetch(`${API_URL}/api/categories`);
+            if (!res.ok) {
+                throw new Error(`Failed to fetch questions: ${res.statusText}`);
+            }
+
+            const data = await res.json();
+            const list = data.categories || data.trivia_categories || [];
+            setTopics(list.map(c => c.name));
+            //should have them in alphabetical order
+
+        } catch (err) {
+            return {categories: [], error: true}
+        }
     }
 
     return (

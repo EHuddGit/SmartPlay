@@ -14,9 +14,6 @@ export default function QuizScreen() {
     useEffect(() => {loadQuestions();}, [state]);
 
     const curQuestion = useMemo(() => questions[current] ?? null, [questions, current]);
-    //need all pieces of the data structure for the page
-
-    //need hook to call
 
     async function loadQuestions() {
         try {
@@ -27,8 +24,7 @@ export default function QuizScreen() {
             const topicSafe = encodeURIComponent(state?.topic || "general");
             const difficultySafe = encodeURIComponent(state?.difficulty || "easy");
 
-            const res = await fetch(`${API_URL}/api/questions?topic=${topicSafe}&difficulty=${difficultySafe}`
-);
+            const res = await fetch(`${API_URL}/api/questions?topic=${topicSafe}&difficulty=${difficultySafe}`);
 
             if (!res.ok) {
                 throw new Error(`Failed to fetch questions: ${res.statusText}`);

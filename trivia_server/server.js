@@ -11,15 +11,21 @@ app.use(express.json());
 
 const QUESTIONS_FILE = path.join(__dirname, "questions.json");
 
-function loadQuestions() {
+async function loadCategories() {
   try {
-    const data = fs.readFileSync(QUESTIONS_FILE, "utf-8");
-    return JSON.parse(data);
+    const resp = await fetch("https://opentdb.com/api_category.php");
+    if (!resp.ok) throw new Error(`Upstream error: ${resp.status}`);
+
+    const json = await resp.json();   
+  
+    return json.trivia_categories;   
   } catch (err) {
-    console.error("Error reading questions file:", err);
-    return {};
+    console.error("Failed to retrieve trivia categories:", err);
+    throw err; 
   }
 }
+
+
 
 app.get("/api/questions", (req, res) => {
   const topic = req.query.topic || "general";
@@ -34,11 +40,23 @@ app.get("/api/questions", (req, res) => {
   res.json(data[topic][difficulty]);
 });
 
+
+
 app.get("/api/config", (req, res) => {
   res.json({
     topics: ["General", "Science", "History", "Programming"],
     difficulties: ["Easy", "Medium", "Hard"]
   });
+});
+
+app.get("/api/categories", async (req, res) => {
+  try {
+    const categories = await loadCategories();
+  
+    res.json({ categories });
+  } catch (e) {
+    res.status(500).json({ error: "failed to load categories" });
+  }
 });
 
 app.get("/health", (_, res) => res.json({ ok: true }));
