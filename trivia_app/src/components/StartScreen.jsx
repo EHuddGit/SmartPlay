@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function StartScreen() {
     const [topics, setTopics] = useState([]);
+    const [topic, setTopic] = useState(0);
     const [difficulty, setDifficulty] = useState([]);
     const difficulties = ["easy", "medium", "hard"];
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function StartScreen() {
 
             const data = await res.json();
             const list = data.categories || data.trivia_categories || [];
-            setTopics(list.map(c => c.name));
+            setTopics([...list].sort((a,b)=> a.name.localeCompare(b.name)));
             //should have them in alphabetical order
 
         } catch (err) {
@@ -41,7 +42,7 @@ export default function StartScreen() {
                 <select id="topic" name="topic" defaultValue="" onChange={(e)=>setTopic(e.target.value)} required>
                     <option value="" disabled>-- Choose a Topic --</option>
                     {topics.map((t) => (
-                        <option key={t} value={t}>{t}</option>
+                        <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
                 </select>
 

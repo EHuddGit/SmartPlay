@@ -15,23 +15,53 @@ export default function QuizScreen() {
 
     const curQuestion = useMemo(() => questions[current] ?? null, [questions, current]);
 
+    const shuffle = (array) => { 
+        for (let i = array.length - 1; i > 0; i--) { 
+        const j = Math.floor(Math.random() * (i + 1)); 
+        [array[i], array[j]] = [array[j], array[i]]; 
+        } 
+    return array; 
+    }; 
+
+    function decodeHtml(str) {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = str;
+        return txt.value
+    }
+
     async function loadQuestions() {
         try {
             setLoading(true);
             setErr("");
 
-            const API_URL = import.meta.env.VITE_API_URL || "";
-            const topicSafe = encodeURIComponent(state?.topic || "general");
+            const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+            const topicSafe = encodeURIComponent(state?.topic || "17");
             const difficultySafe = encodeURIComponent(state?.difficulty || "easy");
 
             const res = await fetch(`${API_URL}/api/questions?topic=${topicSafe}&difficulty=${difficultySafe}`);
+            console.log(`${API_URL}/api/questions?topic=${topicSafe}&difficulty=${difficultySafe}`);
 
             if (!res.ok) {
                 throw new Error(`Failed to fetch questions: ${res.statusText}`);
             }
 
             const data = await res.json();
-            setQuestions(data);
+            console.log("data results" + data)
+            const results = Array.isArray(data) ? data : data.results || [];
+
+            const normalized = results.map(q => {
+                const options = shuffle([...q.incorrect_answers, q.correct_answer]);
+                const answerIndex = options.indexOf(q.correct_answer);
+
+                return {
+                    question: decodeHtml(q.question),
+                    options: options.map(decodeHtml),
+                    answer: answerIndex,
+                };
+            });
+
+            if(!normalized.length) throw new Error("No questions returned");
+            setQuestions(normalized);
             setCurrent(0);
             setScore(0);
 
@@ -39,23 +69,22 @@ export default function QuizScreen() {
             setErr(error.message);
         } finally {
             setLoading(false);
-  }
-}
+        }
+    }
 
     function handleAnswerSelect(optionIndex) {
 
-        if(!curQuestion) return;
+        const correct = optionIndex === curQuestion.answer;
+        const finalScore = score + (correct ? 1 : 0);
 
-        const last = current === questions.length - 1;
-        const isCorrect = optionIndex === curQuestion.answer;
-        const nextScore = isCorrect ? score + 1 : score;
+        if (correct) setScore(s => s + 1);
+        const isLast = current >= questions.length - 1;
 
-        if(!last) {
-            if(isCorrect) setScore((s) => s + 1);
-            setCurrent((i) => i + 1)
-        }
-        else {
-            navigate("/results", { state: { score: nextScore, total: questions.length } });
+        if (!isLast) {
+            setCurrent(i => i + 1);
+        } else {
+            // use the computed finalScore when navigating
+            navigate("/results", { state: { score: finalScore, total: questions.length } });
         }
        
     }
@@ -70,8 +99,8 @@ export default function QuizScreen() {
             <h1>{curQuestion.question}</h1>
 
             <div className="Answers">
-                {curQuestion.options.map((opt, i) => (
-                    <button key={i} onClick={() => handleAnswerSelect(i)}>{opt}</button>
+                {curQuestion.options.map((option, index) => (
+                    <button key={index} onClick={() => handleAnswerSelect(index)}>{option}</button>
                 ))}
             </div>
         </section>
