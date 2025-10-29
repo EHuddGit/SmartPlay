@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import "./QuizStyles.css";
+
 
 export default function QuizScreen() {
     const navigate = useNavigate();
@@ -95,14 +97,25 @@ export default function QuizScreen() {
 
     return (
         <section>
-            <h2>Question {current + 1} of {questions.length}</h2>
-            <h1>{curQuestion.question}</h1>
+    <div className="card stack">
+      {/* Header */}
+      <h1 className="header">Smart Play</h1>
 
-            <div className="Answers">
-                {curQuestion.options.map((option, index) => (
-                    <button key={index} onClick={() => handleAnswerSelect(index)}>{option}</button>
-                ))}
-            </div>
-        </section>
+      {/* PROGRESS: now directly under header and styled */}
+      <p className="quiz-progress">Question {current + 1} of {questions.length}</p>
+
+      {/* Question text */}
+      <h2 className="quiz-question">{curQuestion.question}</h2>
+
+      {/* Answers */}
+      <div className="Answers">
+        {curQuestion.options.map((option, index) => (
+          <button key={index} onClick={() => handleAnswerSelect(index)}>
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
     );
 }

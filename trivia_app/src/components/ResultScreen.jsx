@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom"
+import "./QuizStyles.css";
 
 export default function ResultScreen() {
     const navigate = useNavigate();
@@ -9,10 +10,23 @@ export default function ResultScreen() {
     const percentage = ((score / total) * 100).toFixed(0);
 
     return (
-        <section>
-            <h1>Quiz Complete!</h1>
-            <p>You scored <strong>{score}</strong> out of <strong>{total}</strong></p>
-            <button onClick={() => navigate("/", { replace: true })}>Back to Start</button>
-        </section>
+    <section>
+    <div className="card result-wrap">
+      <h1 className="header">Smart Play</h1>
+      <h2 className="subhead">Quiz Complete!</h2>
+
+      <div className="score-card">
+        <p className="score-big">{score} / {total}</p>
+        <p className="score-meta">{(total ? (score / total) * 100 : 0).toFixed(0)}%</p>
+      </div>
+
+      <div className="actions">
+        {/* ADD THE CLASS */}
+        <button className="btn" onClick={() => navigate("/", { replace: true })}>
+          Back to Start
+        </button>
+      </div>
+    </div>
+  </section>
     )
 }
