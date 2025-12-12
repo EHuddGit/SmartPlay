@@ -5,45 +5,36 @@ import "./QuizStyles.css";
 export default function StartScreen() {
     const [topics, setTopics] = useState([]);
     const [topic, setTopic] = useState(0);
-    const [difficulty, setDifficulty] = useState([]);
+    const [difficulty, setDifficulty] = useState("");
     const difficulties = ["easy", "medium", "hard"];
     const navigate = useNavigate();
 
     useEffect(() => {loadCategories();},[]);
-    useEffect(() => {
-    const all = [
-      "-- Choose a Topic --",
-      ...topics.map(t => t.name ?? String(t)),
-      "-- Choose a Difficulty --",
-      ...difficulties.map(d => String(d)),
-    ];
-    const longest = all.reduce((m, s) => Math.max(m, (s || "").length), 0);
-    const ch = Math.min(40, longest + 4); 
-    document.documentElement.style.setProperty("--select-ch", `${ch}ch`);
-  }, [topics, difficulties]); 
 
     function handleStart() {
         navigate("/quiz", {state: {topic,difficulty}});
     }
 
     async function loadCategories() {
-        try {
-            const API_URL = import.meta.env.VITE_API_URL || "";
+  try {
+    const API_URL = import.meta.env.VITE_API_URL || "";
 
-            const res = await fetch(`${API_URL}/api/categories`);
-            if (!res.ok) {
-                throw new Error(`Failed to fetch questions: ${res.statusText}`);
-            }
-
-            const data = await res.json();
-            const list = data.categories || data.trivia_categories || [];
-            setTopics([...list].sort((a,b)=> a.name.localeCompare(b.name)));
-            //should have them in alphabetical order
-
-        } catch (err) {
-            return {categories: [], error: true}
-        }
+    const res = await fetch(`${API_URL}/api/categories`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch categories: ${res.status} ${res.statusText}`);
     }
+
+    const data = await res.json(); 
+    const list = Array.isArray(data.categories) ? data.categories : [];
+    setTopics(list.slice().sort((a, b) => a.localeCompare(b)));
+
+    return { categories: list, error: false };
+  } catch (err) {
+    console.error("Failed to fetch categories:", err);
+    setTopics([]);
+    return { categories: [], error: true };
+  }
+}
 
     return (
         <section>
@@ -63,7 +54,7 @@ export default function StartScreen() {
                         >
                             <option value="" disabled>-- Choose a Topic --</option>
                             {topics.map((t) => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
+                                <option key={t} value={t}>{t}</option>
                             ))}
                         </select>
                     </div>

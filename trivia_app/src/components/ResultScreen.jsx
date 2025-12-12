@@ -21,7 +21,6 @@ export default function ResultScreen() {
       </div>
 
       <div className="actions">
-        {/* ADD THE CLASS */}
         <button className="btn" onClick={() => navigate("/", { replace: true })}>
           Back to Start
         </button>

@@ -85,7 +85,6 @@ export default function QuizScreen() {
         if (!isLast) {
             setCurrent(i => i + 1);
         } else {
-            // use the computed finalScore when navigating
             navigate("/results", { state: { score: finalScore, total: questions.length } });
         }
        
@@ -98,16 +97,10 @@ export default function QuizScreen() {
     return (
         <section>
     <div className="card stack">
-      {/* Header */}
       <h1 className="header">Smart Play</h1>
-
-      {/* PROGRESS: now directly under header and styled */}
       <p className="quiz-progress">Question {current + 1} of {questions.length}</p>
-
-      {/* Question text */}
       <h2 className="quiz-question">{curQuestion.question}</h2>
 
-      {/* Answers */}
       <div className="Answers">
         {curQuestion.options.map((option, index) => (
           <button key={index} onClick={() => handleAnswerSelect(index)}>
