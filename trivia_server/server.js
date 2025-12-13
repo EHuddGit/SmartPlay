@@ -1,3 +1,4 @@
+const { formatTTAQuestion } = require("./formatQuestion.js");
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
@@ -11,70 +12,103 @@ app.use(express.json());
 
 const QUESTIONS_FILE = path.join(__dirname, "questions.json");
 
+function adaptTTAQuestion(q) {
+  return {
+    question: q?.question?.text ?? "",
+    correct_answer: q?.correctAnswer ?? "",
+    incorrect_answers: Array.isArray(q?.incorrectAnswers)
+      ? q.incorrectAnswers
+      : [],
+  };
+}
+
 async function loadCategories() {
   try {
-    const resp = await fetch("https://opentdb.com/api_category.php");
+    //const resp = await fetch("https://opentdb.com/api_category.php");
+    const resp = await fetch("https://the-trivia-api.com/v2/categories")
+    console.log(resp)
     if (!resp.ok) throw new Error(`Upstream error: ${resp.status}`);
 
-    const json = await resp.json();   
-  
-    return json.trivia_categories;   
+    const data = await resp.json();
+    return Object.keys(data)
+
   } catch (err) {
     console.error("Failed to retrieve trivia categories:", err);
-    throw err; 
+    throw err;
   }
 }
 
-async function loadQuestions(topic,diff) {
-    //amount numbers vary per category and difficulty chosen 15 is the amount
-    const questionAmount = 5;
+async function loadQuestions(topic, diff) {
+  //amount numbers vary per category and difficulty chosen 15 is the amount
+  const questionAmount = 5;
   try {
-    const resp = await fetch(`https://opentdb.com/api.php?amount=${questionAmount}&category=${topic}&difficulty=${diff}&type=multiple`);
-    console.log(`https://opentdb.com/api.php?amount=20&category=${topic}&difficulty=${diff}&type=multiple`);
+    const resp = await fetch(`https://the-trivia-api.com/v2/questions?limit=${questionAmount}&categories=${topic}&difficulties=${diff}`);
+
+    //console.log(`https://the-trivia-api.com/v2/questions?limit=20&categories=${topic}&difficulties=${diff}`);
     if (!resp.ok) throw new Error(`Upstream error: ${resp.status}`);
 
-    const json = await resp.json();   
-  
-    if (!json || !Array.isArray(json.results)) {
-      throw new Error(`Unexpected OpenTDB payload`);
+    const json = await resp.json();
+
+    //console.log(json)
+    if (!Array.isArray(json)) {
+      throw new Error("Unexpected Trivia API payload (expected array)");
     }
-    return json.results;
+    //console.log(json)
+    return json;
 
   } catch (err) {
     console.error("Failed to retrieve trivia categories:", err);
-    throw err; 
+    throw err;
   }
 }
 
-
-
+//should have it so that no matter what trivia api is used, the same json format is returned
 app.get("/api/questions", async (req, res) => {
 
-    const topic = req.query.topic || 17;
-    const difficulty = req.query.difficulty || "easy";
+  const topic = req.query.topic || 17;
+  const difficulty = req.query.difficulty || "easy";
 
-    try {
-        console.log("checking topic id:" + req.query.topic);
-        const questions = await loadQuestions(topic, difficulty);
-        console.log(questions)
+  try {
+    const questions = await loadQuestions(topic, difficulty);
+    console.log(questions)
+    const normalized = [];
 
+for (let i = 0; i < questions.length; i++) {
+  const raw = questions[i];
 
-        if (!questions.length) {
-            return res.status(404).json({ error: "No questions returned" });
-        }
+  try {
+    const adapted = adaptTTAQuestion(raw);
 
-        res.json({ results: questions });
-    } catch (e) {
-        res.status(500).json({ error: "failed to load questions" });
+    // quick check of what you're feeding into the formatter
+    if (i === 0) {
+      console.log("adapted sample:", adapted);
     }
+
+    const formatted = formatTTAQuestion(adapted);
+
+    if (formatted) normalized.push(formatted);
+  } catch (err) {
+    console.log("FAILED at index", i);
+    console.log("raw:", raw);
+    console.log("adapted:", adaptTTAQuestion(raw));
+    console.error(err);
+    break; // stop on first failure so the log is readable
+  }
+}
+
+console.log("normalized count:", normalized.length);
+    if (!normalized.length) {
+      return res.status(404).json({ error: "No questions returned" });
+    }
+
+   res.json(normalized);
+  } catch (e) {
+    res.status(500).json({ error: "failed to load questions" });
+  }
 });
 
-// app.get("/api/questions", (req, res) => {
 
-// });
-
-
-
+//endpoints
 app.get("/api/config", (req, res) => {
   res.json({
     topics: ["General", "Science", "History", "Programming"],
@@ -83,10 +117,12 @@ app.get("/api/config", (req, res) => {
 });
 
 app.get("/api/categories", async (req, res) => {
+  console.log("fetching categories")
   try {
     const categories = await loadCategories();
-  
+
     res.json({ categories });
+    console.log(categories)
   } catch (e) {
     res.status(500).json({ error: "failed to load categories" });
   }
