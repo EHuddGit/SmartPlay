@@ -1,94 +1,83 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./QuizStyles.css";
 
-
 export default function QuizScreen() {
-    const navigate = useNavigate();
-    const { state } = useLocation();
-    
-    const [questions,setQuestions] = useState([]);
-    const [current, setCurrent] = useState(0);
-    const [score, setScore] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const [err, setErr] = useState("");
+ 
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-    useEffect(() => {loadQuestions();}, [state]);
+  const topic = searchParams.get("topic");
+  const difficulty = searchParams.get("difficulty");
 
-    const curQuestion = useMemo(() => questions[current] ?? null, [questions, current]);
+  const [questions, setQuestions] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
-    const shuffle = (array) => { 
-        for (let i = array.length - 1; i > 0; i--) { 
-        const j = Math.floor(Math.random() * (i + 1)); 
-        [array[i], array[j]] = [array[j], array[i]]; 
-        } 
-    return array; 
-    }; 
-
-    function decodeHtml(str) {
-        const txt = document.createElement("textarea");
-        txt.innerHTML = str;
-        return txt.value
+  useEffect(() => {
+    // If params are missing, stop loading and show an error
+    if (!topic || !difficulty) {
+      setErr("Missing topic or difficulty in URL.");
+      setLoading(false);
+      return;
     }
+    loadQuestions(topic, difficulty);
+  }, [topic, difficulty]);
 
-    async function loadQuestions() {
-        try {
-            setLoading(true);
-            setErr("");
+  const curQuestion = useMemo(
+    () => questions[current] ?? null,
+    [questions, current]
+  );
 
-            const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-            const topicSafe = encodeURIComponent(state?.topic || "17");
-            const difficultySafe = encodeURIComponent(state?.difficulty || "easy");
+  async function loadQuestions(topicValue, difficultyValue) {
+    try {
+      setLoading(true);
+      setErr("");
 
-            const res = await fetch(`${API_URL}/api/questions?topic=${topicSafe}&difficulty=${difficultySafe}`);
-            console.log(`${API_URL}/api/questions?topic=${topicSafe}&difficulty=${difficultySafe}`);
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-            if (!res.ok) {
-                throw new Error(`Failed to fetch questions: ${res.statusText}`);
-            }
+      const url =
+        `${API_URL}/api/questions?topic=${encodeURIComponent(topicValue)}` +
+        `&difficulty=${encodeURIComponent(difficultyValue)}`;
 
-            const data = await res.json();
-            console.log("data results" + data)
-            const results = Array.isArray(data) ? data : data.results || [];
+      const res = await fetch(url);
 
-            const normalized = results.map(q => {
-                const options = shuffle([...q.incorrect_answers, q.correct_answer]);
-                const answerIndex = options.indexOf(q.correct_answer);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch questions: ${res.status} ${res.statusText}`);
+      }
 
-                return {
-                    question: decodeHtml(q.question),
-                    options: options.map(decodeHtml),
-                    answer: answerIndex,
-                };
-            });
+      const questionsArray = await res.json();
 
-            if(!normalized.length) throw new Error("No questions returned");
-            setQuestions(normalized);
-            setCurrent(0);
-            setScore(0);
+      if (!Array.isArray(questionsArray) || !questionsArray.length) {
+        throw new Error("No questions returned");
+      }
 
-        } catch (error) {
-            setErr(error.message);
-        } finally {
-            setLoading(false);
-        }
+      setQuestions(questionsArray);
+      setCurrent(0);
+      setScore(0);
+    } catch (e) {
+      setErr(e?.message ?? String(e));
+    } finally {
+      setLoading(false);
     }
+  }
 
-    function handleAnswerSelect(optionIndex) {
+  function handleAnswerSelect(optionIndex) {
+    const correct = optionIndex === curQuestion.answer;
+    const finalScore = score + (correct ? 1 : 0);
 
-        const correct = optionIndex === curQuestion.answer;
-        const finalScore = score + (correct ? 1 : 0);
+    if (correct) setScore((s) => s + 1);
 
-        if (correct) setScore(s => s + 1);
-        const isLast = current >= questions.length - 1;
+    const isLast = current >= questions.length - 1;
 
-        if (!isLast) {
-            setCurrent(i => i + 1);
-        } else {
-            navigate("/results", { state: { score: finalScore, total: questions.length } });
-        }
-       
+    if (!isLast) {
+      setCurrent((i) => i + 1);
+    } else {
+      navigate("/results", { state: { score: finalScore, total: questions.length } });
     }
+  }
 
     if (loading) return <p style={{padding:16}}>Loading questions…</p>;
     if (err) return <p style={{padding:16, color:'crimson'}}>Error: {err}</p>;

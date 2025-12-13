@@ -11,6 +11,7 @@ export default function StartScreen() {
 
     useEffect(() => {loadCategories();},[]);
 
+    //will need to fix this later, does not work when hitting the back button
     function handleStart() {
         navigate("/quiz", {state: {topic,difficulty}});
     }
